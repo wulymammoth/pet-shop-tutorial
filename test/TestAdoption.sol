@@ -18,4 +18,9 @@ contract TestAdoption {
     uint returnedId = adoption.adopt(expectedPetId);
     Assert.equal(returnedId, expectedPetId, 'identifiers do not match');
   }
+
+  function testGetAdopterAddressByPetId() public {
+    address adopter = adoption.adopters(expectedPetId);
+    Assert.equal(adopter, expectedAdopter, 'the adopter identifiers do not match');
+  }
 }
