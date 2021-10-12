@@ -24,9 +24,20 @@ App = {
   },
 
   initWeb3: async function() {
-    /*
-     * Replace me...
-     */
+    App.web3Provider = window.ethereum;
+    try {
+      // request account access (modern dapp browsers or MetaMask will inject
+      // an ethereum provider on the window object
+      await window.ethereum.enable();
+    } catch(error) {
+      // user denied account access
+      console.error('User does not have access rights');
+    } else if (window.web3) {
+      App.web3Provider = window.web3.currentProvider;
+    } else {
+      App.web3Provider = new Web3.providers.HttpProvider('http://localhost:7545');
+    }
+    web3 = new Web3(App.web3Provider);
 
     return App.initContract();
   },
