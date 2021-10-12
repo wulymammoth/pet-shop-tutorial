@@ -43,10 +43,15 @@ App = {
   },
 
   initContract: function() {
-    /*
-     * Replace me...
-     */
-
+    $.getJSON('Adoption.json', function(data) {
+      // obtain adoption artifact and instantiate a truffle contract
+      // - the artifact includes info about the deployed address and ABI
+      App.contracts.Adoption = TruffleContract(data);
+      // set the provider for the contract
+      App.contracts.Adoption.setProvider(App.web3Provider);
+      // use the contract to retrieve and mark the adopted pets
+      return App.markAdopted();
+    });
     return App.bindEvents();
   },
 
@@ -55,21 +60,37 @@ App = {
   },
 
   markAdopted: function() {
-    /*
-     * Replace me...
-     */
+    var adoptionInstance;
+    App.contracts.Adoption.deployed().then(function(instance) {
+      return instance.getAdopters.call() // read data from blockchain without sending a transaction
+    }).then(function(adopters) {
+      adopters.forEach(function(adopter, idx) {
+        if (adopter != '0x0000000000000000000000000000000000000000') {
+          $('.panel-pet').eq(idx).find('button').text('Success').attr('disabled', true);
+        }
+      })
+    }).catch(function(err) {
+      console.error(err.message)
+    });
   },
 
   handleAdopt: function(event) {
     event.preventDefault();
-
     var petId = parseInt($(event.target).data('id'));
-
-    /*
-     * Replace me...
-     */
+    var adoptionInstance;
+    web3.eth.getAccounts(function(err, accounts) {
+      if (err) console.error(err);
+      var account = accounts[0];
+      App.contracts.Adoption.deployed().then(function(instance) {
+        // execute adopt as a transaction by sending account
+        return instance.adopt(petId, { from: account });
+      }).then(function(result) {
+        return App.markAdopted();
+      }).catch(function(err) {
+        console.error(err.message);
+      });
+    });
   }
-
 };
 
 $(function() {
